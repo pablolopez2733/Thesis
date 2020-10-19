@@ -1,2 +1,6 @@
 # Thesis
-R and Python codes for undergrad thesis.  Advisor: Abdolnasser Sadeghkani
+R  codes for undergrad thesis @ ITAM.    
+
+Student: Pablo L. Landeros   
+
+Advisor: Abdolnasser Sadeghkani
