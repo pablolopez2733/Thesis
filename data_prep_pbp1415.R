@@ -7,28 +7,19 @@
 #Libraries----------------------------------------------------------------------
 library(readr)
 library(dplyr)
+library(tidyverse)
+library(lubridate)
+library(zoo)
+library(nbastatR)   # devtools::install_github("abresler/nbastatR")
+library(future)
 #-------------------------------------------------------------------------------
+
+#Extract data from nbastatR into a csv hosted in Github:
+schedule_1415 <- seasons_schedule(seasons = c(2015))
+play_logs_all <- play_by_play_v2(game_ids = unique(schedule_1415$idGame))
+write.csv(play_logs_all,
+          "C:/Users/pablo/Desktop/ITAM/Tesis/datos_de_nbapbp_1415.csv",
+          row.names = FALSE)
 
 #Read Data:
-pbp <- read_csv("C:/Users/pablo/Desktop/ITAM/Tesis/datos_de_nba/20142015.csv")
-#-------------------------------------------------------------------------------
-
-lineups_quarters <- pbp %>% 
-  arrange(game_id,period)
-
-lineup_subs <- pbp %>% 
-  filter(eventmsgtype == 8) %>% 
-  select(game_id,period,seconds_elapsed, player1_team_abbreviation,
-         playerOut = player1_name, playerIn = player2_name, eventnum) %>% 
-  arrange(game_id, eventnum) %>%
-  group_by(game_id, period, player1_team_abbreviation) %>%
-  mutate(row1 = row_number()) %>%
-  ungroup() %>%
-  left_join(lineups_quarters %>%
-              group_by(game_id, period, player1_team_abbreviation) %>%
-              summarise(lineupBefore = paste(sort(unique(player1_name)), collapse = ", ")) %>%
-              ungroup() %>%
-              mutate(row1 = 1)) %>%
-  select(-row1)
-
-  
+pbp_1415 <- read_csv("https://github.com/pablolopez2733/Thesis/blob/main/pbp_1415.csv?raw=true")
