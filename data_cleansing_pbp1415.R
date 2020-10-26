@@ -1,11 +1,11 @@
-#Libraries------------------------------------------------------------
+#Libraries----------------------------------------------------------------------
 library(readr)
 library(dplyr)
-#---------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
 #Read Data:
 pbp <- read_csv("C:/Users/pablo/Desktop/ITAM/Tesis/datos_de_nba/20142015.csv")
-
+#-------------------------------------------------------------------------------
 
 #Extract one game and order it by seconds_elapsed
 game <- pbp %>% 
@@ -19,7 +19,7 @@ game <- game %>%
 #Stats for home team
 lineup_stats_home <- game %>% 
   group_by(home_team_abbrev,
-           home_player_1,home_player_2,home_player_3,home_player_4,home_player_5,) %>% 
+           home_player_1,home_player_2,home_player_3,home_player_4,home_player_5) %>% 
   summarise(initialScoreTeam = newptsHome[row_number() == min(row_number())],
             initialScoreOpp = newptsAway[row_number() == min(row_number())],
             finalScoreTeam = newptsHome[row_number() == max(row_number())],
@@ -31,7 +31,7 @@ lineup_stats_home <- game %>%
          totalScoreOpp = finalScoreOpp - initialScoreOpp,
          Delta = totalScoreTeam - totalScoreOpp,
          totalTime = finalTime - initialTime) %>% 
-  arrange(totalTime)
+  arrange(desc(totalTime)) %>% 
   ungroup()
 
 
@@ -50,5 +50,6 @@ lineup_stats_away <- game %>%
          totalScoreOpp = finalScoreOpp - initialScoreOpp,
          Delta = totalScoreTeam - totalScoreOpp,
          totalTime = finalTime - initialTime) %>% 
-  arrange(totalTime) %>% 
+  arrange(desc(totalTime)) %>% 
   ungroup()
+
