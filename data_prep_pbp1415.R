@@ -1,5 +1,7 @@
 #-------------------------------------
-#Data Prep for Markov Model
+#SCRIPT FOR ADDING A COLUMN TO PBP DATA IN WHICH WE HAVE THE LINEUP FOR THE HOME AND AWAY TEAM
+#FOR EVERY PLAY IN THE SEASON
+
 #reference: https://nbainrstats.netlify.app/post/adding-lineups-to-nba-play-by-play-data/
 #------------------------------------
 
@@ -19,13 +21,13 @@ library(future)
 games <- seasons_schedule(seasons = c(2015))
 play_logs_all <- play_by_play_v2(game_ids = unique(schedule_1415$idGame))
 write.csv(play_logs_all,
-          "C:/Users/pablo/Desktop/ITAM/Tesis/datos_de_nbapbp_1415.csv",
+          "C:/Users/pablo/Desktop/ITAM/Tesis/Thesis/Data/pbp_1415.csv",
           row.names = FALSE)
 #-------------------------------------------------------------------------------
 
 
 #Read Data:
-play_logs_all <- read_csv("https://github.com/pablolopez2733/Thesis/blob/main/pbp_1415.csv?raw=true")
+play_logs_all <- read_csv("https://github.com/pablolopez2733/Thesis/blob/main/Data/pbp_1415.csv?raw=true")
 
 #manipulate so that we have home and away team for each game:
 games <- games %>%
@@ -189,3 +191,11 @@ lineup_game <- lineup_game %>%
 
 #There it is, we now have lineups for every player in every play !!!
 
+
+#-------------------------------------------------------------------------------
+#Now for simplicity we will export it to a csv and start another script:
+write.csv(lineup_game,
+          "C:/Users/pablo/Desktop/ITAM/Tesis/Thesis/Data/lineup_pbp_1415.csv",
+          row.names = FALSE)
+#pushed to github:
+#https://github.com/pablolopez2733/Thesis/blob/main/Data/lineup_pbp_1415.csv
