@@ -1,9 +1,6 @@
-#-------------------------------------
-#SCRIPT FOR ADDING A COLUMN TO PBP DATA IN WHICH WE HAVE THE LINEUP FOR THE HOME AND AWAY TEAM
-#FOR EVERY PLAY IN THE SEASON
-
-#reference: https://nbainrstats.netlify.app/post/adding-lineups-to-nba-play-by-play-data/
-#------------------------------------
+#-------------------------------------------------------------------------------
+#SCRIPT FOR ADDING LINEUPS TO EVERY EVENT IN THE PBP FILE
+#-------------------------------------------------------------------------------
 
 
 #Libraries----------------------------------------------------------------------
