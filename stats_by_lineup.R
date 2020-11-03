@@ -11,8 +11,8 @@ library(future)
 #-------------------------------------------------------------------------------
 
 #Read Data
-lineup_game <- read_csv("https://github.com/pablolopez2733/Thesis/blob/main/Data/lineup_pbp_1415.csv?raw=true",
-                        col_types = cols(timeQuarter = "c"))
+
+lineup_game <- read_csv("Data/lineup_pbp_1415.csv",col_types = cols(timeQuarter = "c"))
 
 lineup_game_stats <- lineup_game %>%
   mutate(canSub = case_when(numberEventMessageType == 5 & !numberEventActionType %in% c(1, 2) ~ 1,    # dead ball turnovers
@@ -113,3 +113,5 @@ lineup_stats <- lineup_stats %>%
 write.csv(lineup_stats,
           "C:/Users/pablo/Desktop/ITAM/Tesis/Thesis/Data/lineup_stats.csv",
           row.names = FALSE)
+#Pushed to github:
+#https://github.com/pablolopez2733/Thesis/blob/main/Data/lineup_stats.csv

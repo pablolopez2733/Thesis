@@ -16,15 +16,16 @@ library(future)
 
 #Extract data from nbastatR into a csv and then push to Github:
 games <- seasons_schedule(seasons = c(2015))
-play_logs_all <- play_by_play_v2(game_ids = unique(schedule_1415$idGame))
-write.csv(play_logs_all,
+play_logs_all <- play_by_play_v2(game_ids = unique(games$idGame))
+write.csv(play_logs_final,
           "C:/Users/pablo/Desktop/ITAM/Tesis/Thesis/Data/pbp_1415.csv",
           row.names = FALSE)
 #-------------------------------------------------------------------------------
 
 
 #Read Data:
-play_logs_all <- read_csv("https://github.com/pablolopez2733/Thesis/blob/main/Data/pbp_1415.csv?raw=true")
+
+play_logs_all <- read_csv("C:/Users/pablo/Desktop/ITAM/Tesis/datos_de_nba/pbp_1415.csv")
 
 #manipulate so that we have home and away team for each game:
 games <- games %>%
