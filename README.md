@@ -7,7 +7,7 @@ Advisor: Abdolnasser Sadeghkani
 
 ***
 ### Scripts:   
-* data_prep_pbp1415.R -> Script that adds a column with the 5 players on court for each team at every event. Exports data to **lineup_pbp_1415.csv**.
-* stats_by_lineup.R -> Script that calculates plus minus net score for every lineup in the 14-15 NBA season. Exports data to **lineup_stats.csv**
+* stat_login.py -> A python  web scraper that uses the scrapy package to retrieve data from stathead.com. It gets all the 5 man units and their stats for every team throughout the 2014-2015 season. Exports data to **items.csv**
+* R scripts did not work :( 
 
 
