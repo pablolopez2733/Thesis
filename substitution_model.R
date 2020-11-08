@@ -8,40 +8,34 @@ library(dplyr)
 library(readr)
 #-------------------------------------------------------------------------------
 
-#Read data:
-subs <- read_csv("https://github.com/pablolopez2733/Thesis/blob/main/Data/subs_1415.csv?raw=true")
-names(subs)[names(subs) == 'slugTeamPlayer'] <- 'Team'
 
+#---------------------------------------------------------------------
+# Calculate GSW transition matrix
 
-#Returns a list
-subs_by_team <- subs %>% 
-  group_by(Team)
-subs_by_team <- group_split(subs_by_team)
+lineup_stats <- read_csv("https://github.com/pablolopez2733/Thesis/blob/main/Data/lineup_stats.csv?raw=true")
+gsw <- lineup_stats %>%
+  filter(slugTeam == "GSW")
+#check if the unique values are same as paper:
+unique(gsw$lineup) #431 vs 446 OK
 
-#Let´s just play with DAllas----------------------------------------------------
-dallas <- as.data.frame(subs_by_team[[7]]) #get dallas subs
+#Try to make a dictionary to add an id to every lineup
+gsw_dict <- data.frame(unique(gsw$lineup))
+gsw_dict$l_id <- 1:nrow(gsw_dict)#add ids
 
+#now let´s left join it with the gsw df:
+gsw <- gsw %>% 
+  left_join(gsw_dict, by = c("lineup" = "unique.gsw.lineup.")) 
 
-#New approach, we first bind all lineups and then generate ids
-all_lineups <- data.frame("lineups" = c(unique(dallas$lineupAfter),unique(dallas$lineupBefore))) 
-dict <- data.frame("Units" = unique(all_lineups$lineups))
-dict$id <- 1:nrow(dict)
+#check for na's
+sum(is.na(gsw$l_id)) #No NAs :D !!!
 
-test_join <- dallas %>% 
-  left_join(dict, by = c("lineupBefore" = "Units")) %>% 
-  rename(id_Before = id)
+#Calculate tranition matrix for gs:
+gsw_tm <- matrix(0L, nrow = nrow(gsw_dict), ncol = nrow(gsw_dict))
+colnames(gsw_tm) <- gsw_dict$l_id
+rownames(gsw_tm) <- gsw_dict$l_id
 
-test_join <- test_join %>% 
-  left_join(dict , by = c("lineupAfter" = "Units")) %>% 
-  rename(id_After = id)
-#-----------------------------------------------------------------------------
-dallas_pm$id <- 1:nrow(dallas_pm)
-dallas_subs <- subs %>% filter(Team == "DAL")
-
-test_join <- dallas_subs %>% 
-  left_join(dallas_pm, by = c("lineupBefore" = "lineup")) %>% 
-  rename(id_Before = id)
-
-test_join <- test_join %>% 
-  left_join(dallas_pm, by = c("lineupAfter" = "lineup")) %>% 
-  rename(id_After = id)
+#for for filling the matrix:
+for (i in 2:nrow(gsw)) {
+  gsw_tm[(gsw$l_id[i-1]),gsw$l_id[i]] = gsw_tm[(gsw$l_id[i-1]),gsw$l_id[i]] + 1
+}
+#LOOKS LIKE IT FCKIN WORKS!!!!!!!!!!!
