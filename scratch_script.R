@@ -7,11 +7,9 @@ library(tidyverse)
 library(dplyr)
 library(readr)
 #-------------------------------------------------------------------------------
-#Read Data:
 lineup_stats <- read_csv("https://github.com/pablolopez2733/Thesis/blob/main/Data/lineup_stats.csv?raw=true")
 grouped_pm <- read.csv("https://github.com/pablolopez2733/Thesis/blob/main/Data/grouped_lineup_stats.csv?raw=true")
 
-#create id for every single 5-man unit:
 grouped_pm$l_id <- 1:nrow(grouped_pm)
 #Now every lineup for every team has a unique_id
 #Thus, grouped_pm will act as a dictionary

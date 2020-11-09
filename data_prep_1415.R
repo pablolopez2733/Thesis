@@ -331,18 +331,20 @@ grouped_pm <- lineup_stats %>%
   summarise(seasonPM = sum(netScoreTeam),
             seasonSecs = sum(totalTime)) %>%
   ungroup() %>%
-  arrange(-seasonPM) %>%
-  mutate(seasonMin = paste0(floor(seasonSecs / 60), ":", str_pad(round(seasonSecs %% 60, 0), side = "left", width = 2, pad = 0))) %>%
-  select(-seasonSecs)
+  arrange(-seasonPM) 
+#for getting time as minutes:
+# %>%
+#   mutate(seasonMin = paste0(floor(seasonSecs / 60), ":", str_pad(round(seasonSecs %% 60, 0), side = "left", width = 2, pad = 0))) %>%
+#   select(-seasonSecs)
 
 #Now we'll export the dfs of interest to a csv:
 #stats by lineup doesnt group
 #grouped pm does
 write.csv(lineup_subs,
-          "C:/Users/pablo/Desktop/ITAM/Tesis/Thesis/Data/subs_1415.csv",
+          "C:/Users/pablo/Desktop/ITAM/Tesis/Thesis/Data/lineup_subs.csv",
           row.names = FALSE)
 write.csv(lineup_stats,
-          "C:/Users/pablo/Desktop/ITAM/Tesis/Thesis/Data/stats_by_lineup.csv",
+          "C:/Users/pablo/Desktop/ITAM/Tesis/Thesis/Data/lineup_stats.csv",
           row.names = FALSE)
 
 write.csv(indiv_stats,
