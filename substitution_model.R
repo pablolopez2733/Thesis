@@ -13,6 +13,8 @@ grouped_pm <- read.csv("https://github.com/pablolopez2733/Thesis/blob/main/Data/
 
 #create id for every single 5-man unit:
 grouped_pm$l_id <- 1:nrow(grouped_pm)
+#calculate minutes for each lineup:
+grouped_pm$Season_mins <- floor(grouped_pm$seasonSecs / 60)
 #Now every lineup for every team has a unique_id
 #Thus, grouped_pm will act as a dictionary
 
@@ -45,18 +47,20 @@ transition_matrix <- function(team){
     tm[toString(team_df$t_1[i]),toString(team_df$t_2[i])] = tm[toString(team_df$t_1[i]),toString(team_df$t_2[i])] + 1
   }
   
-  # N <- M
-  # nombres <- rownames(M)
-  # for(i in nombres){
-  #   dato <- T[which(T$l_id==i),]$Seasonsecs #which me regresa el renglon en donde el identificador corresponde con el valor pasado.
-  #   N[i,] <- M[i,]/dato
-  # }
+  N <- tm
+  nombres <- rownames(tm)
+  for(i in nombres){
+    dato <- grouped_pm[which(grouped_pm$l_id==i),]$seasonSecs #which me regresa el renglon en donde el identificador corresponde con el valor pasado.
+    N[i,] <- tm[i,]/dato
+  }
   
-  return(tm)
+  return(N)
   
 }
 
 #test it:
 test_cleveland <- transition_matrix("CLE")
 
-#IT  WORKS!!!!!!!!!! :D
+#------------------------------NOTES--------------------------------------
+#Should we try with minutes instead and filter out some?
+#because: absorbent states and working with bigger numbers
