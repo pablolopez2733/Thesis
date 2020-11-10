@@ -16,4 +16,6 @@ Advisor: Abdolnasser Sadeghkani
     *  lineup_subs.csv -> A list of all the substitutions made in the 2014-2015 season with 
      **lineupBefore** and **lineupAfter** columns.
 
-* substitution_model.R -> Contains a function that takes a team as an argument and calculates its transitions as a matrix. Still missing dividing by time spent in state j
+* substitution_model.R -> Contains a function that takes a team as an argument and calculates its transitions as a matrix.
+
+* linear_data_prep -> Prepare data for linear regression models.  

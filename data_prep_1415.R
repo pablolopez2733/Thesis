@@ -327,7 +327,7 @@ indiv_stats %>%
   select(-seasonSecs)
 
 grouped_pm <- lineup_stats %>%
-  group_by(lineup) %>%
+  group_by(lineup,slugTeam) %>%
   summarise(seasonPM = sum(netScoreTeam),
             seasonSecs = sum(totalTime)) %>%
   ungroup() %>%
