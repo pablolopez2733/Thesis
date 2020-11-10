@@ -332,7 +332,7 @@ grouped_pm <- lineup_stats %>%
             seasonSecs = sum(totalTime)) %>%
   ungroup() %>%
   arrange(-seasonPM) 
-#for getting time as minutes:
+#for getting time as minutes
 # %>%
 #   mutate(seasonMin = paste0(floor(seasonSecs / 60), ":", str_pad(round(seasonSecs %% 60, 0), side = "left", width = 2, pad = 0))) %>%
 #   select(-seasonSecs)

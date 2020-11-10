@@ -45,6 +45,13 @@ transition_matrix <- function(team){
     tm[toString(team_df$t_1[i]),toString(team_df$t_2[i])] = tm[toString(team_df$t_1[i]),toString(team_df$t_2[i])] + 1
   }
   
+  # N <- M
+  # nombres <- rownames(M)
+  # for(i in nombres){
+  #   dato <- T[which(T$l_id==i),]$Seasonsecs #which me regresa el renglon en donde el identificador corresponde con el valor pasado.
+  #   N[i,] <- M[i,]/dato
+  # }
+  
   return(tm)
   
 }
