@@ -18,7 +18,7 @@ X_matrix <- function(team){
       game_pm = sum(netScoreTeam)
       
     ) %>% 
-    left_join(grouped_pm, by = c("lineup" = "lineup")) %>% 
+    left_join(grouped_pm, by = c("lineup" = "lineup"))
     
   #this should output a tibble where we have the lineups used in every game
   #their time, and pm. Seems to work
@@ -26,10 +26,24 @@ X_matrix <- function(team){
   X <- matrix(0L, nrow = 82, ncol = N_i) #create matrix
   #rename matrix so that columns and rows are lineup_ids:
   colnames(X) <- unique(team_series$l_id) 
-  rownames(X) <- unique(team_df$idGame)
+  rownames(X) <- unique(team_series$idGame)
   
   
+  lineups <- colnames(X)
+  games <- rownames(X)
+  for(l in lineups){
+    for (g in games) {
+      dato <- team_series[which(team_series$idGame == as.double(g) & team_series$l_id == as.double(l)),]$time_played
+      if(length(dato) == 0)
+        X[g,l] <- 0
+      else
+        X[g,l] <- dato
+    }
+
+  }
   
-  
+  return(X)
   
 }
+
+test_clevx <- X_matrix("CLE")
