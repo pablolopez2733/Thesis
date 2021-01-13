@@ -337,6 +337,12 @@ grouped_pm <- lineup_stats %>%
 #   mutate(seasonMin = paste0(floor(seasonSecs / 60), ":", str_pad(round(seasonSecs %% 60, 0), side = "left", width = 2, pad = 0))) %>%
 #   select(-seasonSecs)
 
+
+#create id for every single 5-man unit:
+grouped_pm$l_id <- 1:nrow(grouped_pm)
+#calculate minutes for each lineup:
+grouped_pm$Season_mins <- floor(grouped_pm$seasonSecs / 60)
+
 #Now we'll export the dfs of interest to a csv:
 #stats by lineup doesnt group
 #grouped pm does

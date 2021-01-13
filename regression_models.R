@@ -57,6 +57,20 @@ x_matrix <- function(team){
 # 'Returns the 82 x 1 vector of point differential for every game
 # 'of a given team. 
 y_vector <- function(team){
+  # game_res has results and scores for every 2014-2015 regular season game
+  game_res <- lineup_stats %>% 
+    group_by(idGame,slugTeam) %>%
+    summarise(
+      pt_dif = sum(netScoreTeam),
+      pts = last(finalScoreTeam)
+    )
+  # team_res just has number of points scored in each game by each team
+  team_res <- game_res %>% 
+    filter(slugTeam == team)
+  
+  num_vec <- team_res$pts
+  
+  return(num_vec)
   
 }
 
@@ -64,3 +78,4 @@ y_vector <- function(team){
 #Test---------------------------------------------------------------------------
 # Test with Cleveland Cavaliers:
 test_clevx <- x_matrix("CLE")
+test_clevy <- y_vector("CLE")
