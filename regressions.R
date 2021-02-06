@@ -8,6 +8,7 @@ library(dplyr)
 library(readr)
 library(glmnet)
 
+# Test with Cleveland:
 
 # Set matrices:
 x_cleveland_training <- x_matrix("CLE")
@@ -50,6 +51,10 @@ sse_test <- sum((y_predicted_test - y_cleveland_test)^2)
 rsq <- 1 - sse_test / sst_test
 rsq
 
+
+
+# Trying to create a function which returns the regression results for each team
+# (INCOMPLETE)
 
 ridge_regression <- function (team){
   
