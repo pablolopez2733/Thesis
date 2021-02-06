@@ -8,48 +8,42 @@ library(dplyr)
 library(readr)
 library(glmnet)
 
-# Test with Cleveland:
+# Ridge Regression Test with Cleveland:--------------------------------------
 
 # Set matrices:
-x_cleveland_training <- x_matrix("CLE")
-y_cleveland_training <- y_vector("CLE")
-x_cleveland_test <-x_matrix_playoffs("CLE")
-y_cleveland_test <- y_vector_playoffs("CLE")
-
-# Ridge Regression
-
-
-x = as.matrix(x_cleveland_training)
-y_train = y_cleveland_training
-
-x_test = as.matrix(x_cleveland_test)
-y_test = y_cleveland_test
+x_train = x_matrix("CLE")
+y_train = y_vector("CLE")
+x_test = x_matrix_playoffs("CLE")
+y_test = y_vector_playoffs("CLE")
 
 # Fit model:
 lambdas <- 10^seq(2, -3, by = -.1)
-fit <- glmnet(x, y_train, nlambda = 25, alpha = 0, lambda = lambdas)
-fit_test <- glmnet(x_cleveland_test, y_cleveland_test, nlambda = 25, alpha = 0, lambda = lambdas)
+fit <- glmnet(x_train, y_train, nlambda = 25, alpha = 0, lambda = lambdas)
+fit_test <- glmnet(x_test, y_test, nlambda = 25, alpha = 0, lambda = lambdas)
 
-#Get optimal lambda:
-cv_fit <- cv.glmnet(x, y_train, alpha = 0, lambda = lambdas)
-plot(cv_fit)
+#Get optimal lambdas:
+cv_fit <- cv.glmnet(x_train, y_train, alpha = 0, lambda = lambdas)
 opt_lambda <- cv_fit$lambda.min
-cv_fit_test <- cv.glmnet(x_cleveland_test, y_cleveland_test, alpha = 0, lambda = lambdas)
+cv_fit_test <- cv.glmnet(x_test, y_test, alpha = 0, lambda = lambdas)
 opt_lambda_test <- cv_fit_test$lambda.min
 
-#Predict on training
-y_predicted <- predict(fit, s = opt_lambda, newx = x_cleveland_test)
-y_predicted_test <- predict(fit_test, s = opt_lambda_test, newx = x_cleveland_test)
-# Sum of Squares Total and Error
+# Predict on training(regular season)
+y_predicted <- predict(fit, s = opt_lambda, newx = x_train)
 sst <- sum((y_train - mean(y_train))^2)
 sse <- sum((y_predicted - y_train)^2)
+rsq <- 1 - (sse / sst)
 
-sst_test <- sum((y_cleveland_test - mean(y_cleveland_test))^2)
-sse_test <- sum((y_predicted_test - y_cleveland_test)^2)
-
-# R squared
+#Predict on test (playoffs)
+y_predicted_test <- predict(fit_test, s = opt_lambda_test, newx = x_test)
+sst_test <- sum((y_test - mean(y_test))^2)
+sse_test <- sum((y_predicted_test - y_test)^2)
 rsq <- 1 - sse_test / sst_test
-rsq
+
+
+
+
+
+
 
 
 
