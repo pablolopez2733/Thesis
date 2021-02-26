@@ -26,6 +26,7 @@ x_matrix <- function(team){
   # This should output a tibble where we have the lineups used in every game
   # their time, and pm.
   
+  
   # Create matrix
   N_i <- nrow(as.data.frame(unique(team_series$l_id)))
   X <- matrix(0L, nrow = 82, ncol = N_i)
@@ -86,7 +87,7 @@ x_matrix_playoffs <- function(team){
     group_by(idGame)
   n_games <- nrow(as.data.frame(unique(counter$idGame)))
   
-  team_series <- lineup_stats_playoffs %>% 
+  team_series <- lineup_stats %>% 
     filter(slugTeam == team) %>% 
     group_by(idGame,lineup) %>% 
     summarise(
@@ -94,9 +95,19 @@ x_matrix_playoffs <- function(team){
       game_pm = sum(netScoreTeam)
       
     ) %>% 
-    left_join(grouped_pm_playoffs, by = c("lineup" = "lineup"))
-  # This should output a tibble where we have the lineups used in every game
-  # their time, and pm.
+    left_join(grouped_pm, by = c("lineup" = "lineup"))
+  # This should output a tibble where we have the lineups used in
+  
+  team_series_rs <- lineup_stats_playoffs %>% 
+    filter(slugTeam == team) %>% 
+    group_by(idGame,lineup) %>% 
+    summarise(
+      time_played = sum(totalTime),
+      game_pm = sum(netScoreTeam)
+      
+    ) %>% 
+    left_join(grouped_pm, by = c("lineup" = "lineup"))
+  
   
   # Create matrix
   N_i <- nrow(as.data.frame(unique(team_series$l_id)))
@@ -104,7 +115,7 @@ x_matrix_playoffs <- function(team){
   
   #Rename matrix so that columns and rows are lineup_ids:
   colnames(X) <- unique(team_series$l_id) 
-  rownames(X) <- unique(team_series$idGame)
+  rownames(X) <- unique(team_series_rs$idGame)
   
   
   lineups <- colnames(X)
@@ -112,7 +123,7 @@ x_matrix_playoffs <- function(team){
   # Iterate through all the possible lineups and games
   for(l in lineups){
     for (g in games) {
-      dato <- team_series[which(team_series$idGame == as.double(g) & team_series$l_id == as.double(l)),]$time_played
+      dato <- team_series_rs[which(team_series_rs$idGame == as.double(g) & team_series_rs$l_id == as.double(l)),]$time_played
       # Because a lineup may not have appeared in a game, we need to account for
       # length zero values
       if(length(dato) == 0)

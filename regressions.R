@@ -7,25 +7,43 @@ library(tidyverse)
 library(dplyr)
 library(readr)
 library(glmnet)
+library(caret)
+
+####################################################
+# Compute R^2 from true and predicted values
+eval_results <- function(true, predicted, df) {
+  SSE <- sum((predicted - true)^2)
+  SST <- sum((true - mean(true))^2)
+  R_square <- 1 - SSE / SST
+  RMSE = sqrt(SSE/nrow(df))
+  
+  
+  # Model performance metrics
+  data.frame(
+    RMSE = RMSE,
+    Rsquare = R_square
+  )
+  
+}
+
 
 # Ridge Regression Test with Cleveland:--------------------------------------
 
 # Set matrices:
-x_train = x_matrix("CLE")
-y_train = y_vector("CLE")
-x_test = x_matrix_playoffs("CLE")
-y_test = y_vector_playoffs("CLE")
+t <- "CLE"
+x_train = log(x_matrix(t)+1)
+y_train = y_vector(t)
+x_test = log(x_matrix_playoffs(t)+1)
+y_test = y_vector_playoffs(t)
 
 # Fit model:
-lambdas <- 10^seq(2, -3, by = -.1)
+lambdas <- 10^seq(3, -3, by = -.1)
 fit <- glmnet(x_train, y_train, nlambda = 25, alpha = 0, lambda = lambdas)
-fit_test <- glmnet(x_test, y_test, nlambda = 25, alpha = 0, lambda = lambdas)
 
 #Get optimal lambdas:
 cv_fit <- cv.glmnet(x_train, y_train, alpha = 0, lambda = lambdas)
 opt_lambda <- cv_fit$lambda.min
-cv_fit_test <- cv.glmnet(x_test, y_test, alpha = 0, lambda = lambdas)
-opt_lambda_test <- cv_fit_test$lambda.min
+
 
 # Predict on training(regular season)
 y_predicted <- predict(fit, s = opt_lambda, newx = x_train)
@@ -34,63 +52,48 @@ sse <- sum((y_predicted - y_train)^2)
 rsq <- 1 - (sse / sst)
 
 #Predict on test (playoffs)
-y_predicted_test <- predict(fit_test, s = opt_lambda_test, newx = x_test)
+y_predicted_test <- predict(fit, s = opt_lambda, newx = x_test)
 sst_test <- sum((y_test - mean(y_test))^2)
 sse_test <- sum((y_predicted_test - y_test)^2)
-rsq <- 1 - sse_test / sst_test
+rsq_test <- 1 - (sse_test / sst_test)
 
 
 
 
 
 
+##############################################################
+# Elastic Net
+##############################################################
+train <- as.data.frame(cbind(x_train,y_train)) 
 
 
+# Set training control
+train_cont <- trainControl(method = "repeatedcv",
+                           number = 10,
+                           repeats = 5,
+                           search = "random",
+                           verboseIter = TRUE)
 
-# Trying to create a function which returns the regression results for each team
-# (INCOMPLETE)
+# Train the model
+elastic_reg <- train(y_train ~ .,
+                     data = train,
+                     method = "glmnet",
+                     preProcess = c("center", "scale"),
+                     tuneLength = 10,
+                     trControl = train_cont)
 
-ridge_regression <- function (team){
-  
-  x_season <- x_matrix(team)
-  y_season <- y_vector(team)
-  x_test <-x_matrix_playoffs(team)
-  y_test <- y_vector_playoffs(team)
-  
-  # Fit model:
-  lambdas <- 10^seq(2, -3, by = -.1)
-  fit <- glmnet(x_season, y_season, nlambda = 25, alpha = 0, lambda = lambdas)
-  fit_test <- glmnet(x_test, y_test, nlambda = 25, alpha = 0, lambda = lambdas)
-  
-  #Get optimal lambda:
-  cv_fit <- cv.glmnet(x, y_season, alpha = 0, lambda = lambdas)
-  opt_lambda <- cv_fit$lambda.min
-  cv_fit_test <- cv.glmnet(x_test, y_test, alpha = 0, lambda = lambdas)
-  opt_lambda_test <- cv_fit_test$lambda.min
-  
-  #Predict on training
-  y_predicted <- predict(fit, s = opt_lambda, newx = x_season)
-  y_predicted_test <- predict(fit_test, s = opt_lambda_test, newx = x_test)
-  # Sum of Squares Total and Error
-  sst <- sum((y_season - mean(y_season))^2)
-  sse <- sum((y_predicted - y_season)^2)
-  
-  sst_test <- sum((y_test - mean(y_test))^2)
-  sse_test <- sum((y_predicted_test - y_test)^2)
-  
-  # R squared
-  rsq <- 1 - (sse / sst)
-  rsq_test <- 1 - (sse_test / sst_test)
-  
-  #bind vectors
-  train_results <- c(sst,sse,rsq)
-  test_results <- c(sst_test,sse_test,rsq_test)
-  results <- rbind(train_results,test_results)
-  
-  return(results)
-  
-}
 
+# Best tuning parameter
+best_e <- elastic_reg$bestTune
+
+# Make predictions on training set
+predictions_train <- predict(elastic_reg, x_train)
+eval_results(y_train, predictions_train, train) 
+
+# Make predictions on test set
+predictions_test <- predict(elastic_reg, x_test)
+eval_results(y_test, predictions_test, test)
 
 
 
