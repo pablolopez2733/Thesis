@@ -1,17 +1,8 @@
-#------------------SCRIPT FOR REGRESSION MODELS-------------------------------
-# Libraries--------------------------------------------------------------------
-library(tidyverse)
-library(dplyr)
-library(readr)
+##############################################################################
+####### SCRIPT FOR DEFINING THE MATRICES REQUIRED FOR REGRESSION #############
+##############################################################################
 
-
-# Read Data--------------------------------------------------------------------
-lineup_stats <- read_csv("https://github.com/pablolopez2733/Thesis/blob/main/Data/lineup_stats.csv?raw=true")
-grouped_pm <- read.csv("https://github.com/pablolopez2733/Thesis/blob/main/Data/grouped_lineup_stats.csv?raw=true")
-
-lineup_stats_playoffs <- read_csv("https://github.com/pablolopez2733/Thesis/raw/main/Data/lineup_stats_playoffs.csv")
-grouped_pm_playoffs <- read_csv("https://github.com/pablolopez2733/Thesis/raw/main/Data/grouped_lineup_stats_playoffs.csv")
-# Function x_matrix FOR SEASONS------------------------------------------------------------
+# Function x_matrix for seasons ================================================
 # 'Returns the N_i x 82 matrix for the team given as an argument.
 x_matrix <- function(team){
   team_series <- lineup_stats %>% 
@@ -49,14 +40,14 @@ x_matrix <- function(team){
       else
         X[g,l] <- dato
     }
-
+    
   }
   
   return(X)
   
 }
 
-# Function Y_Vector FOR SEASONS-------------------------------------------------------------
+# Function Y_Vector for seasons ================================================
 # 'Returns the 82 x 1 vector of point differential for every game
 # 'of a given team. 
 y_vector <- function(team){
@@ -78,7 +69,7 @@ y_vector <- function(team){
 }
 
 
-# Function x_matrix_playoffs for playoffs
+# Function x_matrix_playoffs for playoffs =====================================
 x_matrix_playoffs <- function(team){
   
   #Count games
@@ -139,6 +130,7 @@ x_matrix_playoffs <- function(team){
 }
 
 
+# Function y_vector for playoffs ===============================================
 y_vector_playoffs<- function(team){
   # game_res has results and scores for every 2014-2015 regular season game
   game_res <- lineup_stats_playoffs %>% 
@@ -158,11 +150,19 @@ y_vector_playoffs<- function(team){
 }
 
 
-#Test---------------------------------------------------------------------------
-# Test with Cleveland Cavaliers:
-test_clevx <- x_matrix("CLE")
-test_clevy <- y_vector("CLE")
-test_clevx_test <- x_matrix_playoffs("CLE")
-test_clevy_test <- y_vector_playoffs("CLE")
+# Function for computing R^2 from true and predicted values====================
+eval_results <- function(true, predicted, df) {
+  SSE <- sum((predicted - true)^2)
+  SST <- sum((true - mean(true))^2)
+  R_square <- 1 - SSE / SST
+  RMSE = sqrt(SSE/nrow(df))
+  
+  # Model performance metrics
+  data.frame(
+    RMSE = RMSE,
+    Rsquare = R_square
+  )
+  
+}
 
 

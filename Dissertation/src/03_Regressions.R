@@ -1,36 +1,15 @@
-# RIDGE REGRESSION --------------------------------
-# We must first run the matrix_functions script in order to have the 
-# necessary functions.
-
-# Libraries--------------------------------------------------------------------
-library(tidyverse)
-library(dplyr)
-library(readr)
-library(glmnet)
-library(caret)
-
-####################################################
-# Compute R^2 from true and predicted values
-eval_results <- function(true, predicted, df) {
-  SSE <- sum((predicted - true)^2)
-  SST <- sum((true - mean(true))^2)
-  R_square <- 1 - SSE / SST
-  RMSE = sqrt(SSE/nrow(df))
-  
-  
-  # Model performance metrics
-  data.frame(
-    RMSE = RMSE,
-    Rsquare = R_square
-  )
-  
-}
+###############################################################################
+######## SCRIPT FOR RUNNING THE RIDGE & ELASTIC NET REGRESSIONS ###############
+###############################################################################
 
 
-# Ridge Regression Test with Cleveland:--------------------------------------
-
-# Set matrices:
+#================= Define team for the regression =============================
 t <- "CLE"
+#==============================================================================
+
+
+# ====================== RIDGE REGRESSION =====================================
+# Set matrices:
 x_train = log(x_matrix(t)+1)
 y_train = y_vector(t)
 x_test = log(x_matrix_playoffs(t)+1)
@@ -46,13 +25,13 @@ opt_lambda <- cv_fit$lambda.min
 
 
 # Predict on training(regular season)
-y_predicted <- predict(fit, s = opt_lambda, newx = x_train)
+y_predicted <- predict(fit, s = opt_lambda, newx = log(x_train +1))
 sst <- sum((y_train - mean(y_train))^2)
 sse <- sum((y_predicted - y_train)^2)
 rsq <- 1 - (sse / sst)
 
 #Predict on test (playoffs)
-y_predicted_test <- predict(fit, s = opt_lambda, newx = x_test)
+y_predicted_test <- predict(fit, s = opt_lambda, newx = log(x_test+1))
 sst_test <- sum((y_test - mean(y_test))^2)
 sse_test <- sum((y_predicted_test - y_test)^2)
 rsq_test <- 1 - (sse_test / sst_test)
@@ -61,12 +40,10 @@ rsq_test <- 1 - (sse_test / sst_test)
 
 
 
-
-##############################################################
-# Elastic Net
-##############################################################
+# ========================= ELASTIC NET REGRESSION =============================
+# Define train and test set
 train <- as.data.frame(cbind(x_train,y_train)) 
-
+test <- as.data.frame(cbind(x_test,y_test))
 
 # Set training control
 train_cont <- trainControl(method = "repeatedcv",
@@ -88,12 +65,13 @@ elastic_reg <- train(y_train ~ .,
 best_e <- elastic_reg$bestTune
 
 # Make predictions on training set
-predictions_train <- predict(elastic_reg, x_train)
+predictions_train <- predict(elastic_reg, log(x_train+1))
 eval_results(y_train, predictions_train, train) 
 
 # Make predictions on test set
-predictions_test <- predict(elastic_reg, x_test)
+predictions_test <- predict(elastic_reg, log(x_test+1))
 eval_results(y_test, predictions_test, test)
+
 
 
 
