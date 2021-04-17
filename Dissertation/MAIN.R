@@ -8,11 +8,10 @@ library(lubridate)
 library(zoo)
 library(nbastatR)   # devtools::install_github("abresler/nbastatR")
 library(future)
-library(dplyr)
-library(readr)
 library(glmnet)
 library(caret)
-library(ggplot2)
+library(data.table)
+library(ggdark)
 # ==============================================================================
 
 
@@ -25,7 +24,7 @@ library(ggplot2)
 source("src/01_ReadData.R")
 
 # Define functions for computing lineup transition matrices
-source("src/02_Transition_Matrices.R")
+source("src/02_TransitionMatrices.R")
 
-# Run the regressions
+# Define functions for running regressions
 source("src/03_Regressions")
