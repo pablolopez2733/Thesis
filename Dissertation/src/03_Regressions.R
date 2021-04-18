@@ -102,6 +102,8 @@ sse_test <- sum((y_predicted_test - y_test)^2)
 rsq_test <- 1 - (sse_test / sst_test)
 
 
+
+
 ###############################################################################
 ############################# RIDGE REGRESSION ################################
 ###############################################################################
@@ -159,13 +161,14 @@ fit_ridge <- function(team)
 }
 
 # Create results dataframe:
-ridge_res <- c("TEAM","LAMBDA","R2","SST","SSE","RMSE")
+names <- c("TEAM","LAMBDA","R2","SST","SSE","RMSE")
 ridge_res <- data.frame()
 for (k in names) ridge_res[[k]] <- as.character()
 
 # Execute function and append results into a dataframe
 for (t in teams) {
   ridge_res <- rbind(ridge_res,fit_ridge(t))
+  print(paste0("Progress: ",nrow(ridge_res)," out of 30"))
 }
 
 # Write results to a csv file
@@ -236,7 +239,7 @@ fit_lasso <- function(team)
 }
 
 # Create results dataframe:
-lasso_res <- c("TEAM","LAMBDA","R2","SST","SSE","RMSE")
+names <- c("TEAM","LAMBDA","R2","SST","SSE","RMSE")
 lasso_res <- data.frame()
 for (k in names) lasso_res[[k]] <- as.character()
 
