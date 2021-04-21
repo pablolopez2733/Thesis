@@ -260,10 +260,22 @@ write.csv(lasso_res,"outputs/lasso_seasonfit.csv")
 ########################## ELASTIC NET ########################################
 ###############################################################################
 
+# Function for extracting best fit in an elastic net regression
+get_best_result = function(caret_fit) 
+  {
+  best = which(rownames(caret_fit$results) == rownames(caret_fit$bestTune))
+  best_result = caret_fit$results[best, ]
+  rownames(best_result) = NULL
+  best_result
+  }
+
+
+
 # Function for fitting ELASTIC NET model to whole season:======================
 
 fit_elastic <- function(team)
 {
+  set.seed(33)
   x_train <- x_matrix(team)
   y_train <- y_vector(team)
   
@@ -286,14 +298,51 @@ fit_elastic <- function(team)
   
   # Best tuning parameter
   best_e <- elastic_reg$bestTune
+  params <- get_best_result(elastic_reg)
   
   # Make predictions on training set
   predictions_train <- predict(elastic_reg, x_train)
   
-  print(paste0("TEAM: ",team))
-  eval_results(y_train, predictions_train, train) 
   
+  sst <- sum((y_train - mean(y_train))^2)
+  sse <- sum((predictions_train - y_train)^2)
+  rsq <- 1 - (sse / sst)
+  rmse = sqrt(sse/nrow(x_train))
   
+  res <- data.frame(TEAM = team,
+                        R2_pred = rsq,
+                        SST = sst,
+                        SSE = sse
+  )
+  
+  results <- cbind(res,params) 
+  
+  return(results)
   
 }
+
+# Create results dataframe:
+names <- c("TEAM",
+           "R2_pred",
+           "SST",
+           "SSE",
+           "alpha",
+           "lambda",
+           "RMSE",
+           "Rsquared",
+           "MAE",
+           "RMSESD",
+           "RsquaredSD",
+           "MAESD")
+elastic_net_res <- data.frame()
+for (k in names) elastic_net_res[[k]] <- as.character()
+
+for (t in teams) {
+  elastic_net_res <- rbind(elastic_net_res,fit_elastic(t))
+  print(paste0("Progress: ",nrow(elastic_net_res)," out of 30 teams"))
+}
+
+# Write results to a csv file
+write.csv(elastic_net_res,"outputs/elasticnet_seasonfits.csv")
+
 
