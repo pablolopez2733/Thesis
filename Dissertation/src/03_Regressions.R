@@ -8,15 +8,16 @@ set.seed(33)
 
 
 # No transform playoffs elastic with manual alpha :---------------------------
+t <- "GSW"
 x_train <- x_matrix(t)
 y_train <- y_vector(t)
 x_test <- x_matrix_playoffs(t)
 y_test <- y_vector_playoffs(t)
-a <- .5
+a <- 0
 
 # Fit model:
-lambdas <- 10^seq(3, -3, by = -.1)
-fit <- glmnet(x_train, y_train, nlambda = 25, alpha = a , lambda = lambdas)
+lambdas <- 10^seq(4, -4, by = -.1)
+fit <- glmnet(x_train, y_train, alpha = a , lambda = lambdas,standardize = FALSE)
 
 #Get optimal lambdas:
 cv_fit <- cv.glmnet(x_train, y_train, alpha = a, lambda = lambdas)
@@ -71,6 +72,7 @@ eval_results(y_test, predictions_test, test)
 
 
 # Elastic experiment but all samples are in the regular season and manual alpha ==================
+set.seed(33)
 t = "CLE"
 x <- x_matrix(t)
 y <- y_vector(t)
@@ -81,11 +83,11 @@ y_test <- y[59:82]
 a<-0
 
 # Fit model:
-lambdas <- 10^seq(3, -3, by = -.1)
+lambdas <- 10^seq(4, -4, by = -.1)
 fit <- glmnet(x_train, y_train, alpha = a, lambda = lambdas)
 
 #Get optimal lambdas:
-cv_fit <- cv.glmnet(x_train, y_train, alpha = a, lambda = lambdas)
+cv_fit <- cv.glmnet(x_train, y_train, alpha = a, lambda = lambdas,standardize = FALSE)
 opt_lambda <- cv_fit$lambda.min
 
 
@@ -116,7 +118,7 @@ fit_ridge <- function(team)
   y_train <- y_vector(team)
   
   lambdas <- 10^seq(4, -4, by = -.1)
-  fit <- glmnet(x_train, y_train, alpha = 0 , lambda = lambdas)
+  fit <- glmnet(x_train, y_train, alpha = 0 , lambda = lambdas,standardize = FALSE)
   
   #Get optimal lambdas:
   cv_fit <- cv.glmnet(x_train, y_train, alpha = 0, lambda = lambdas)
@@ -172,7 +174,7 @@ for (t in teams) {
 }
 
 # Write results to a csv file
-write.csv(ridge_res,"outputs/ridge_seasonfit.csv")
+write.csv(ridge_res,"outputs/ridge_seasonfit_nonorm.csv")
 
 
 ################################################################################
@@ -185,7 +187,7 @@ fit_lasso <- function(team)
   x_train <- x_matrix(team)
   y_train <- y_vector(team)
   lambdas <- 10^seq(4, -4, by = -.1)
-  fit <- glmnet(x_train, y_train, alpha = 1 , lambda = lambdas)
+  fit <- glmnet(x_train, y_train, alpha = 1 , lambda = lambdas, standardize = FALSE)
   
   #Get optimal lambdas:
   cv_fit <- cv.glmnet(x_train, y_train, alpha = 1, lambda = lambdas)
@@ -197,17 +199,14 @@ fit_lasso <- function(team)
   sst <- sum((y_train - mean(y_train))^2)
   sse <- sum((y_predicted - y_train)^2)
   rsq <- 1 - (sse / sst)
+  rmse = sqrt(sse/nrow(x_train))
   
   print(paste0("TEAM: ",team))
   print(paste0("Lambda: ",opt_lambda))
   print(paste0("R^2: ",rsq))
   print(paste0("sst: ",sst,"| sse: ",sse))
   
-  y_predicted <- predict(fit, s = opt_lambda, newx = x_train)
-  sst <- sum((y_train - mean(y_train))^2)
-  sse <- sum((y_predicted - y_train)^2)
-  rsq <- 1 - (sse / sst)
-  rmse = sqrt(sse/nrow(x_train))
+
   
   
   
@@ -218,12 +217,7 @@ fit_lasso <- function(team)
   # 
   # AICc <- -tLL+2*k+2*k*(k+1)/(n-k-1)
   # BIC<-log(n)*k - tLL
-  
-  
-  print(paste0("TEAM: ",team))
-  print(paste0("Lambda: ",opt_lambda))
-  print(paste0("R^2: ",rsq))
-  print(paste0("sst: ",sst,"| sse: ",sse))
+
   # print(paste0("AIC: ",aic,"| sse: ",sse))
   # print(paste0("BIC: ",bic,"| sse: ",sse))
   
@@ -250,7 +244,7 @@ for (t in teams) {
 }
 
 # Write results to a csv file
-write.csv(lasso_res,"outputs/lasso_seasonfit.csv")
+write.csv(lasso_res,"outputs/lasso_seasonfit_no_standarization.csv")
 
 
 
@@ -292,6 +286,7 @@ fit_elastic <- function(team)
   elastic_reg <- train(y_train ~ .,
                        data = train,
                        method = "glmnet",
+                       preProcess = c("center", "scale"),
                        tuneLength = 10, #10 alpha values and 10 lambdas for each
                        trControl = train_cont)
   
@@ -343,6 +338,98 @@ for (t in teams) {
 }
 
 # Write results to a csv file
-write.csv(elastic_net_res,"outputs/elasticnet_seasonfits.csv")
+write.csv(elastic_net_res,"outputs/elasticnet_seasonfits_withproc.csv")
+
+################################################################################
+# Elastic net but with training and test in regular season
+################################################################################
 
 
+# Function for extracting best fit in an elastic net regression
+get_best_result = function(caret_fit) 
+{
+  best = which(rownames(caret_fit$results) == rownames(caret_fit$bestTune))
+  best_result = caret_fit$results[best, ]
+  rownames(best_result) = NULL
+  best_result
+}
+
+
+
+fit_elastic <- function(team)
+{
+  set.seed(33)
+  x_train <- x_matrix(team)
+  y_train <- y_vector(team)
+  x_train <- x[1:58,]
+  y_train <- y[1:58]
+  x_test <- x[59:82,]
+  y_test <- y[59:82]
+  
+  
+  # Define train and test set
+  train <- as.data.frame(cbind(x_train,y_train))
+  
+  # Set training control
+  train_cont <- trainControl(method = "cv",
+                             number = 10,
+                             search = "random",
+                             verboseIter = TRUE)
+  
+  # Train the model
+  elastic_reg <- train(y_train ~ .,
+                       data = train,
+                       method = "glmnet",
+                       preProcess = c("center", "scale"),
+                       tuneLength = 10, #10 alpha values and 10 lambdas for each
+                       trControl = train_cont)
+  
+  
+  # Best tuning parameter
+  best_e <- elastic_reg$bestTune
+  params <- get_best_result(elastic_reg)
+  
+  # Make predictions on training set
+  predictions_train <- predict(elastic_reg, x_test)
+  
+  
+  sst <- sum((y_train - mean(y_train))^2)
+  sse <- sum((predictions_train - y_train)^2)
+  rsq <- 1 - (sse / sst)
+  rmse = sqrt(sse/nrow(x_train))
+  
+  res <- data.frame(TEAM = team,
+                    R2_pred = rsq,
+                    SST = sst,
+                    SSE = sse
+  )
+  
+  results <- cbind(res,params) 
+  
+  return(results)
+  
+}
+
+# Create results dataframe:
+names <- c("TEAM",
+           "R2_pred",
+           "SST",
+           "SSE",
+           "alpha",
+           "lambda",
+           "RMSE",
+           "Rsquared",
+           "MAE",
+           "RMSESD",
+           "RsquaredSD",
+           "MAESD")
+elastic_net_res <- data.frame()
+for (k in names) elastic_net_res[[k]] <- as.character()
+
+for (t in teams) {
+  elastic_net_res <- rbind(elastic_net_res,fit_elastic(t))
+  print(paste0("Progress: ",nrow(elastic_net_res)," out of 30 teams"))
+}
+
+# Write results to a csv file
+write.csv(elastic_net_res,"outputs/elasticnet_train_test.csv")
